@@ -8,16 +8,18 @@ export const sessionMiddleware = session({
   store: new PgSession({
     pool: pool,
     tableName: "sessions",
+    createTableIfMissing: true,
   }),
   secret: process.env.SESSION_SECRET || "eastcoast-credit-union-secret-key-2025",
   resave: false,
   saveUninitialized: false,
+  rolling: true,
   cookie: {
-    secure: process.env.NODE_ENV === "production",
+    secure: false, // Set to false for now to work with Render's proxy
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+    sameSite: "lax",
   },
-  proxy: process.env.NODE_ENV === "production", // Trust first proxy (Render)
+  proxy: true, // Always trust proxy for Render
   name: "eccu.session.id",
 });

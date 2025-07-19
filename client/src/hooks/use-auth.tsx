@@ -25,15 +25,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const response = await fetch("/api/auth/me", {
           credentials: "include",
+          headers: {
+            'Content-Type': 'application/json',
+          },
         });
         if (response.status === 401) {
+          console.log("User not authenticated");
           return null;
         }
         if (!response.ok) {
+          console.error("Failed to fetch user, status:", response.status);
           throw new Error("Failed to fetch user");
         }
-        return response.json();
+        const userData = await response.json();
+        console.log("User authenticated:", userData.name);
+        return userData;
       } catch (error) {
+        console.error("Auth check error:", error);
         return null;
       }
     },
@@ -60,9 +68,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await apiRequest("POST", "/api/auth/verify-otp", { code, purpose });
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-      setLocation("/dashboard");
+    onSuccess: async () => {
+      console.log("OTP verification successful, refreshing user data");
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      // Add a small delay to ensure session is updated
+      setTimeout(() => {
+        setLocation("/dashboard");
+      }, 500);
     },
   });
 

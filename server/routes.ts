@@ -96,10 +96,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Store pending user in session
       req.session.pendingUserId = user.id;
+      
       await new Promise((resolve, reject) => {
         req.session.save((err) => {
-          if (err) reject(err);
-          else resolve(undefined);
+          if (err) {
+            console.error("Session save error:", err);
+            reject(err);
+          } else {
+            console.log("Session saved successfully, pendingUserId:", user.id);
+            resolve(undefined);
+          }
         });
       });
 
@@ -134,9 +140,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.session.pendingUserId = undefined;
         
         await storage.updateUserLastLogin(userId);
+        
+        console.log("Login successful, session updated:", {
+          userId: req.session.userId,
+          isAuthenticated: req.session.isAuthenticated
+        });
       }
 
-      await new Promise((resolve) => req.session.save(resolve));
+      await new Promise((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error during OTP verification:", err);
+            reject(err);
+          } else {
+            console.log("Session saved after OTP verification");
+            resolve(undefined);
+          }
+        });
+      });
+      
       res.json({ message: "Verification successful" });
     } catch (error) {
       console.error("OTP verification error:", error);
