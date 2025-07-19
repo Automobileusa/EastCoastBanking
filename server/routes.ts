@@ -162,7 +162,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/accounts", requireAuth, async (req, res) => {
     try {
       const accounts = await storage.getUserAccounts(req.session.userId!);
-      console.log("Raw accounts from database:", JSON.stringify(accounts, null, 2));
       res.json(accounts);
     } catch (error) {
       console.error("Get accounts error:", error);
