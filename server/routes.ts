@@ -86,11 +86,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
       });
 
-      await emailService.sendOTP(user.email, otpCode, user.name);
+      try {
+        await emailService.sendOTP(user.email, otpCode, user.name);
+        console.log(`OTP email sent to ${user.email}`);
+      } catch (emailError) {
+        console.error("Email sending failed:", emailError);
+        return res.status(500).json({ message: "Failed to send verification code. Please try again." });
+      }
 
       // Store pending user in session
       req.session.pendingUserId = user.id;
-      await new Promise((resolve) => req.session.save(resolve));
+      await new Promise((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) reject(err);
+          else resolve(undefined);
+        });
+      });
 
       res.json({ message: "OTP sent to your email", requiresOTP: true });
     } catch (error) {

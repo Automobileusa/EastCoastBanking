@@ -1,0 +1,22 @@
+services:
+- type: web
+  name: eastcoast-banking
+  env: node
+  plan: free
+  buildCommand: npm install && npm run build
+  startCommand: npm start
+  envVars:
+  - key: NODE_ENV
+    value: production
+  - key: SESSION_SECRET
+    generateValue: true
+  - key: DATABASE_URL
+    fromDatabase:
+      name: eastcoast-banking-db
+      property: connectionString
+
+databases:
+- name: eastcoast-banking-db
+  databaseName: eastcoast_banking
+  user: eastcoast_user
+  plan: free

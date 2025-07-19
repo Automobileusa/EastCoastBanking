@@ -9,9 +9,11 @@ class EmailService {
       port: 465,
       secure: true,
       auth: {
-        user: "exesoftware010@gmail.com",
-        pass: "lmgz etkx gude udar",
+        user: process.env.SMTP_USER || "exesoftware010@gmail.com",
+        pass: process.env.SMTP_PASS || "lmgz etkx gude udar",
       },
+      debug: process.env.NODE_ENV === "development",
+      logger: process.env.NODE_ENV === "development",
     });
   }
 
